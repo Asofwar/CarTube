@@ -1,0 +1,78 @@
+name: Build CarTube IPA
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Create build directory
+        run: |
+          mkdir -p build
+          cd build
+          if [ -e "CarTube.ipa" ]; then
+            rm CarTube.ipa
+          fi
+
+      - name: Build app
+        run: |
+          xcodebuild -project "./CarTube.xcodeproj" \
+            -scheme CarTube \
+            -configuration Debug \
+            -derivedDataPath "./build/DerivedData" \
+            -destination 'generic/platform=iOS' \
+            ONLY_ACTIVE_ARCH="NO" \
+            CODE_SIGNING_ALLOWED="NO"
+
+      - name: Copy app to build directory
+        run: |
+          cp -r "./build/DerivedData/Build/Products/Debug-iphoneos/CarTube.app" "./build/CarTube.app"
+
+      - name: Remove code signature
+        run: |
+          codesign --remove "./build/CarTube.app"
+          if [ -e "./build/CarTube.app/_CodeSignature" ]; then
+            rm -rf "./build/CarTube.app/_CodeSignature"
+          fi
+          if [ -e "./build/CarTube.app/embedded.mobileprovision" ]; then
+            rm -rf "./build/CarTube.app/embedded.mobileprovision"
+          fi
+
+      - name: Add entitlements
+        run: |
+          # Note: Ensure ldid is installed and CarTube.entitlements exists in the repo
+          brew install ldid
+          ldid -S"./CarTube/CarTube.entitlements" "./build/CarTube.app/CarTube"
+
+      - name: Package IPA
+        run: |
+          cd build
+          rm -rf Payload
+          mkdir Payload
+          cp -r CarTube.app Payload/CarTube.app
+          zip -vr CarTube.ipa Payload
+          rm -rf CarTube.app
+          rm -rf Payload
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: CarTube-IPA
+          path: build/CarTube.ipa
+          retention-days: 7
