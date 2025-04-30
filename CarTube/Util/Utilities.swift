@@ -59,48 +59,67 @@ func registerForUnlockNotification(callback: @escaping () -> Void) {
 
 /// Check if the screen is currently locked - also fires on notification screen
 func isScreenLocked() -> Bool {
-    let sbs = dlopen("/System/Library/PrivateFrameworks/SpringBoardServices.framework/SpringBoardServices", RTLD_LAZY)
-    defer {
-        dlclose(sbs)
+    if #available(iOS 17.0, *) {
+        // Use alternative method for iOS 17+
+        return UIApplication.shared.applicationState == .background
+    } else {
+        // Use original method for older iOS versions
+        let sbs = dlopen("/System/Library/PrivateFrameworks/SpringBoardServices.framework/SpringBoardServices", RTLD_LAZY)
+        defer {
+            dlclose(sbs)
+        }
+
+        let s1 = dlsym(sbs, "SBSSpringBoardServerPort")
+        let SBSSpringBoardServerPort = unsafeBitCast(s1, to: (@convention(c) () -> mach_port_t).self)
+
+        let s2 = dlsym(sbs, "SBGetScreenLockStatus")
+        var lockStatus: ObjCBool = false
+        var passcodeEnabled: ObjCBool = false
+        let SBGetScreenLockStatus = unsafeBitCast(s2, to: (@convention(c) (mach_port_t, UnsafeMutablePointer<ObjCBool>, UnsafeMutablePointer<ObjCBool>) -> Void).self)
+        SBGetScreenLockStatus(SBSSpringBoardServerPort(), &lockStatus, &passcodeEnabled)
+        return lockStatus.boolValue
     }
-
-    let s1 = dlsym(sbs, "SBSSpringBoardServerPort")
-    let SBSSpringBoardServerPort = unsafeBitCast(s1, to: (@convention(c) () -> mach_port_t).self)
-
-    let s2 = dlsym(sbs, "SBGetScreenLockStatus")
-    var lockStatus: ObjCBool = false
-    var passcodeEnabled: ObjCBool = false
-    let SBGetScreenLockStatus = unsafeBitCast(s2, to: (@convention(c) (mach_port_t, UnsafeMutablePointer<ObjCBool>, UnsafeMutablePointer<ObjCBool>) -> Void).self)
-    SBGetScreenLockStatus(SBSSpringBoardServerPort(), &lockStatus, &passcodeEnabled)
-    return lockStatus.boolValue
 }
 
 /// Get the current display brightness, is 0 if off
 func getScreenBrightness() -> Float {
-    let bbs = dlopen("/System/Library/PrivateFrameworks/BackBoardServices.framework/BackBoardServices", RTLD_LAZY)
-    defer {
-        dlclose(bbs)
+    if #available(iOS 17.0, *) {
+        // Use public API for iOS 17+
+        return Float(UIScreen.main.brightness)
+    } else {
+        // Use original method for older iOS versions
+        let bbs = dlopen("/System/Library/PrivateFrameworks/BackBoardServices.framework/BackBoardServices", RTLD_LAZY)
+        defer {
+            dlclose(bbs)
+        }
+        
+        let s = dlsym(bbs, "BKSDisplayBrightnessGetCurrent")
+        let BKSDisplayBrightnessGetCurrent = unsafeBitCast(s, to: (@convention(c) () -> Float).self)
+        let brightness = BKSDisplayBrightnessGetCurrent()
+        
+        return brightness
     }
-    
-    let s = dlsym(bbs, "BKSDisplayBrightnessGetCurrent")
-    let BKSDisplayBrightnessGetCurrent = unsafeBitCast(s, to: (@convention(c) () -> Float).self)
-    let brightness = BKSDisplayBrightnessGetCurrent()
-    
-    return brightness
 }
 
 /// Set the current display brightness
 /// Requires entitlement "com.apple.backboard.displaybrightness"
 func setScreenBrightness(_ brightness: Float) {
     guard brightness >= 0, brightness <= 1 else { return }
-    let bbs = dlopen("/System/Library/PrivateFrameworks/BackBoardServices.framework/BackBoardServices", RTLD_LAZY)
-    defer {
-        dlclose(bbs)
-    }
     
-    let s = dlsym(bbs, "BKSDisplayBrightnessSet")
-    let BKSDisplayBrightnessSet = unsafeBitCast(s, to: (@convention(c) (Float, NSInteger) -> Void).self)
-    BKSDisplayBrightnessSet(brightness, 1)
+    if #available(iOS 17.0, *) {
+        // Use public API for iOS 17+
+        UIScreen.main.brightness = CGFloat(brightness)
+    } else {
+        // Use original method for older iOS versions
+        let bbs = dlopen("/System/Library/PrivateFrameworks/BackBoardServices.framework/BackBoardServices", RTLD_LAZY)
+        defer {
+            dlclose(bbs)
+        }
+        
+        let s = dlsym(bbs, "BKSDisplayBrightnessSet")
+        let BKSDisplayBrightnessSet = unsafeBitCast(s, to: (@convention(c) (Float, NSInteger) -> Void).self)
+        BKSDisplayBrightnessSet(brightness, 1)
+    }
 }
 
 /// Check if auto-brightness is enabled
@@ -135,14 +154,25 @@ func getSettingsBrightness() -> Float {
 /// Enable or disable auto-brightness
 /// Requires entitlement "com.apple.backboard.displaybrightness"
 func setAutoBrightness(_ on: Bool) {
-    let bbs = dlopen("/System/Library/PrivateFrameworks/BackBoardServices.framework/BackBoardServices", RTLD_LAZY)
-    defer {
-        dlclose(bbs)
+    if #available(iOS 17.0, *) {
+        // For iOS 17+, we can't directly control auto-brightness with public APIs
+        // We'll just set the brightness directly which will temporarily override auto-brightness
+        if !on {
+            // If turning off auto-brightness, we'll just set the current brightness
+            let currentBrightness = getScreenBrightness()
+            UIScreen.main.brightness = CGFloat(currentBrightness)
+        }
+    } else {
+        // Use original method for older iOS versions
+        let bbs = dlopen("/System/Library/PrivateFrameworks/BackBoardServices.framework/BackBoardServices", RTLD_LAZY)
+        defer {
+            dlclose(bbs)
+        }
+        
+        let s = dlsym(bbs, "BKSDisplayBrightnessSetAutoBrightnessEnabled")
+        let BKSDisplayBrightnessSetAutoBrightnessEnabled = unsafeBitCast(s, to: (@convention(c) (ObjCBool) -> Void).self)
+        BKSDisplayBrightnessSetAutoBrightnessEnabled(ObjCBool(on))
     }
-    
-    let s = dlsym(bbs, "BKSDisplayBrightnessSetAutoBrightnessEnabled")
-    let BKSDisplayBrightnessSetAutoBrightnessEnabled = unsafeBitCast(s, to: (@convention(c) (ObjCBool) -> Void).self)
-    BKSDisplayBrightnessSetAutoBrightnessEnabled(ObjCBool(on))
 }
 
 /// Get information on the currently playing song
@@ -177,3 +207,6 @@ func getNowPlaying(completion: @escaping (Result<(title: String, artist: String,
         completion(.success((title, artist, bundleID)))
     })
 }
+
+// Add Error extension for string errors
+extension String: Error {}

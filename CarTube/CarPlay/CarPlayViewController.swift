@@ -8,6 +8,32 @@
 import WebKit
 import SwiftUI
 
+// Add UIKit extension for sleep disabler check
+extension WKWebView {
+    @objc func hasSleepDisabler() -> Bool {
+        if #available(iOS 17.0, *) {
+            // Use alternative method for iOS 17+
+            return self.value(forKey: "_preventingDisplaySleep") as? Bool ?? false
+        } else {
+            // Use original method for older iOS versions
+            return self.performs(Selector(("_hasSleepDisabler"))) ? (self.perform(Selector(("_hasSleepDisabler"))).takeRetainedValue() as? Bool ?? false) : false
+        }
+    }
+    
+    @objc func simulateTextEntered(_ text: String) {
+        if #available(iOS 17.0, *) {
+            // Use alternative method for iOS 17+
+            let script = "document.activeElement.value = document.activeElement.value + '\(text)';"
+            self.evaluateJavaScript(script, completionHandler: nil)
+        } else {
+            // Use original method for older iOS versions
+            if self.performs(Selector(("_simulateTextEntered:"))) {
+                self.perform(Selector(("_simulateTextEntered:")), with: text)
+            }
+        }
+    }
+}
+
 // This is the view controller shown on an in car's head unit display with CarPlay.
 class CarPlayViewController: UIViewController, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHandler {
     
@@ -16,7 +42,7 @@ class CarPlayViewController: UIViewController, WKNavigationDelegate, WKUIDelegat
     private var noSleepView: WKWebView = WKWebView()
     private var screenOffLabel: UIView = UIView()
     private var timer: Timer?
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -222,8 +248,8 @@ class CarPlayViewController: UIViewController, WKNavigationDelegate, WKUIDelegat
         if timer == nil {
             self.noSleepView.evaluateJavaScript("noSleep.enable()")
             timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
-                let sleepDisabledNoSleepView = self.noSleepView._hasSleepDisabler()
-                let sleepDisabledWebView = self.webView._hasSleepDisabler()
+                let sleepDisabledNoSleepView = self.noSleepView.hasSleepDisabler()
+                let sleepDisabledWebView = self.webView.hasSleepDisabler()
                 if sleepDisabledWebView {
                     self.noSleepView.evaluateJavaScript("noSleep.disable()")
                 }
@@ -246,7 +272,7 @@ class CarPlayViewController: UIViewController, WKNavigationDelegate, WKUIDelegat
     
     // Send keystrokes to the web view
     func sendInput(_ input: String) {
-        webView._simulateTextEntered(input)
+        webView.simulateTextEntered(input)
     }
     
     // Send a backspace to the web view
