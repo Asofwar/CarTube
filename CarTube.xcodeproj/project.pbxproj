@@ -14,7 +14,6 @@
 		250B50ED2953D29100397038 /* CarPlaySceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 250B50EA2953D29100397038 /* CarPlaySceneDelegate.swift */; };
 		250B50EE2953D29100397038 /* CarPlaySingleton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 250B50EB2953D29100397038 /* CarPlaySingleton.swift */; };
 		250B50F32953D2F600397038 /* SponsorBlock.js in Resources */ = {isa = PBXBuildFile; fileRef = 250B50F12953D2F600397038 /* SponsorBlock.js */; };
-		250B50F52953D37A00397038 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 250B50F42953D37A00397038 /* Assets.xcassets */; };
 		255396962967BA8B00E49F9E /* String++.swift in Sources */ = {isa = PBXBuildFile; fileRef = 255396952967BA8B00E49F9E /* String++.swift */; };
 		257D148C297A3F040095689E /* HideScrollBar.m in Sources */ = {isa = PBXBuildFile; fileRef = 257D1489297A3E6B0095689E /* HideScrollBar.m */; };
 		257D148D297A3F270095689E /* AutoHookImplementor.m in Sources */ = {isa = PBXBuildFile; fileRef = 257D148A297A3E6B0095689E /* AutoHookImplementor.m */; };
@@ -71,7 +70,6 @@
 		250B50EA2953D29100397038 /* CarPlaySceneDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CarPlaySceneDelegate.swift; sourceTree = "<group>"; };
 		250B50EB2953D29100397038 /* CarPlaySingleton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CarPlaySingleton.swift; sourceTree = "<group>"; };
 		250B50F12953D2F600397038 /* SponsorBlock.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = SponsorBlock.js; sourceTree = "<group>"; };
-		250B50F42953D37A00397038 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = ../../TrollTube/TrollTube/Assets.xcassets; sourceTree = "<group>"; };
 		250B50FD2953D59B00397038 /* UniformTypeIdentifiers.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UniformTypeIdentifiers.framework; path = System/Library/Frameworks/UniformTypeIdentifiers.framework; sourceTree = SDKROOT; };
 		255396952967BA8B00E49F9E /* String++.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String++.swift"; sourceTree = "<group>"; };
 		2578407829540CC900357803 /* Alert++.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Alert++.swift"; sourceTree = "<group>"; };
@@ -152,7 +150,6 @@
 				250B50F62953D3D800397038 /* CarPlay */,
 				250B50E82953D26200397038 /* CarTube.entitlements */,
 				250B50CF2953D12500397038 /* CarTubeApp.swift */,
-				250B50F42953D37A00397038 /* Assets.xcassets */,
 				2583A81529663CF300EBEFB9 /* Util */,
 				250B50D52953D12800397038 /* Preview Content */,
 			);
