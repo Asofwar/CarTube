@@ -365,7 +365,6 @@
 				2587378A2964F03D009EAA2A /* NoSleepEnable.js in Resources */,
 				250B50D72953D12800397038 /* Preview Assets.xcassets in Resources */,
 				250B50F32953D2F600397038 /* SponsorBlock.js in Resources */,
-				250B50F52953D37A00397038 /* Assets.xcassets in Resources */,
 				25838A33297BEBC400B3990A /* AgeRestrictBypass.js in Resources */,
 				25838A35297C00D400B3990A /* AdBlocker.js in Resources */,
 				25EED73A295F05AA00C0DF56 /* CustomLayout.js in Resources */,
