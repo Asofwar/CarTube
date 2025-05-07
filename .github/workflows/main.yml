@@ -56,7 +56,13 @@ jobs:
       - name: Add entitlements
         run: |
           brew install ldid
-          ldid -S"./CarTube/CarTube.entitlements" "./build/CarTube.app/CarTube"
+          BINARY=$(defaults read "$(pwd)/build/CarTube.app/Info.plist" CFBundleExecutable)
+          echo "Detected executable: $BINARY"
+          if [ -f "./build/CarTube.app/$BINARY" ] && [ -f "./CarTube/CarTube.entitlements" ]; then
+            ldid -S"./CarTube/CarTube.entitlements" "./build/CarTube.app/$BINARY"
+          else
+            echo "❌ Either binary or entitlements not found. Skipping signing."
+          fi
 
       - name: Package IPA
         run: |
