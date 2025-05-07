@@ -30,15 +30,16 @@ jobs:
             rm CarTube.ipa
           fi
 
-      - name: Build app
-        run: |
-          xcodebuild -project "./CarTube.xcodeproj" \
-            -scheme CarTube \
-            -configuration Debug \
-            -derivedDataPath "./build/DerivedData" \
-            -destination 'generic/platform=iOS' \
-            ONLY_ACTIVE_ARCH="NO" \
-            CODE_SIGNING_ALLOWED="NO"
+- name: Build app
+  run: |
+    xcodebuild -project "./CarTube.xcodeproj" \
+      -scheme CarTube \
+      -configuration Debug \
+      -derivedDataPath "./build/DerivedData" \
+      -destination 'generic/platform=iOS' \
+      ONLY_ACTIVE_ARCH="NO" \
+      CODE_SIGNING_ALLOWED="NO" \
+      -verbose -showBuildTimingSummary | tee xcodebuild.log
 
       - name: Copy app to build directory
         run: |
